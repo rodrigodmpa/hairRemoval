@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( hair )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( hair main.cpp HairRemoval.cpp)
+target_link_libraries( hair ${OpenCV_LIBS})
