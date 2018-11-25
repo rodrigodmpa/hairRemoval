@@ -49,7 +49,7 @@ int main()
     // cout << "M = " << endl << " " << kernel45 << endl << endl;
     // cout << "M = " << endl << " " << kernel90 << endl << endl;
     
-    // Aplica o fechamento com os 3 kernels
+    // Aplica o fechamento com os 4 kernels
     morphologyEx(mat_colored, mat_closed0,cv::MORPH_CLOSE, kernel0);
     morphologyEx(mat_colored, mat_closed45,cv::MORPH_CLOSE, kernel45);
     morphologyEx(mat_colored, mat_closed90,cv::MORPH_CLOSE, kernel90);
