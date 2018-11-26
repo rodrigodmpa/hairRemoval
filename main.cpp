@@ -7,7 +7,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#define T 30
+#define T 22
  
 using namespace cv;
 using namespace std;
@@ -39,7 +39,7 @@ int main(int argc , char *argv[])
     Mat channels[3]; // Matriz dos canais BRG separados
     Mat generalized_grayscale[3], mat_hair_final;// Matrizes necessarias para calculo da matriz de cabelo final binaria
 
-    mat_colored = imread("./fig1.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
+    mat_colored = imread("./fig5.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
 
     split(mat_colored,channels); // Separa a matriz colorida em 3 canais BGR
 
@@ -58,7 +58,12 @@ int main(int argc , char *argv[])
     kernel90 = Mat::zeros(13,1, CV_8UC1);
 
     //Kernel para dilatacao
-    Mat kernelD = Mat::ones(5,5, CV_8UC1);
+    Mat kernelD = Mat::ones(3,3, CV_8UC1);
+    
+    int testK[9] = {0,1,0,
+                    1,1,1,
+                    0,1,0};
+    Mat kernelT = Mat(3, 3, CV_8U, testK);
 
 
     // preenche os kernels com 1's
@@ -170,7 +175,7 @@ int main(int argc , char *argv[])
     /* Removendo ruídos de mat_hair_final*/
 
 
-    imwrite("pelo1.jpg", mat_hair_final);
+    imwrite("pelo1.png", mat_hair_final);
     struct lines linhas;
 
     int posX = 0;
@@ -178,6 +183,8 @@ int main(int argc , char *argv[])
 
     int largura = atoi(argv[1]);
     int comprimento = atoi(argv[2]);
+
+    Mat test = mat_hair_final.clone();
 
     for(int y = 0 ; y < mat_hair_final.rows ; y++){
         for(int x = 0 ; x < mat_hair_final.cols ; x++){
@@ -298,6 +305,20 @@ int main(int argc , char *argv[])
     
 //    mat_hair_final = 255- mat_hair_final;
 //    dilate(mat_hair_final,mat_hair_final, kernelD);
+//    test = 255 - test;
+//    morphologyEx(mat_hair_final, mat_hair_final,cv::MORPH_OPEN, kernelD);
+//    morphologyEx(mat_hair_final, mat_hair_final,cv::MORPH_CLOSE, kernelD);
+//    morphologyEx(test, mat_hair_final,cv::MORPH_OPEN, kernelD);
+//    morphologyEx(test, mat_hair_final,cv::MORPH_CLOSE, kernelD);
+//    erode(test,test, kernelD);
+
+
+//    mat_hair_final = mat_hair_final + test;
+//    mat_hair_final = 255 - mat_hair_final;
+
+
+
+    //dilate(mat_hair_final,mat_hair_final, kernelD);
 
 
     
@@ -307,6 +328,6 @@ int main(int argc , char *argv[])
     imshow("Matriz Cabelos", mat_hair_final);
     waitKey(0);
     destroyAllWindows();
-    imwrite("pelo1_corrigido.jpg", mat_hair_final);
+    imwrite("pelo1_corrigido.png", mat_hair_final);
     return 0;
 }
