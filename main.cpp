@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-    Mat mat_colored; //Declaração da matriz da imagem colorida
+    Mat mat_colored, mat_out; //Declaração da matriz da imagem colorida
     Mat mat_hair[3], mat_closed0[3],mat_closed45[3],mat_closed90[3],mat_closed[3]; // Matrizes auxiliares para o fechamento e para os cabelos
     Mat kernel0,kernel45,kernel90; //Declaração dos kernels para fazer closing
     Mat channels[3]; // Matriz dos canais BRG separados
@@ -108,42 +108,42 @@ int main()
         }
     }
 
-    // Ignora isso por enquanto
-    // merge(mat_closed,3,mat_out);
+    // Junção das 3 channels de fechamento
+    merge(mat_closed,3,mat_out);
 
     // União das 3 matrizes de cabelo B, G, R
     mat_hair_final = mat_hair[0] + mat_hair[1] + mat_hair[2];
     
     // Negativo da matriz de cabelos para que os pelos fiquem branco
-    for (int i=0; i< mat_colored.rows; i++){
-        for (int j=0 ;j< mat_colored.cols ; j++){ 
-            if(mat_hair_final.at<uchar>(i,j) == 255){
-                mat_hair_final.at<uchar>(i,j) = 0;
-            }
-            else{
-                mat_hair_final.at<uchar>(i,j) = 255;
-            }
-        }
-    }
+
+    // for (int i=0; i< mat_colored.rows; i++){
+    //     for (int j=0 ;j< mat_colored.cols ; j++){ 
+    //         if(mat_hair_final.at<uchar>(i,j) == 255){
+    //             mat_hair_final.at<uchar>(i,j) = 0;
+    //         }
+    //         else{
+    //             mat_hair_final.at<uchar>(i,j) = 255;
+    //         }
+    //     }
+    // }
 
     //mostra imagem com pelos e as imagens com closing
-    // imshow("fechamento - kernel 0", mat_closed0);
-    // imshow("fechamento - kernel 45", mat_closed45);
-    // imshow("fechamento - kernel 90", mat_closed90);
+    
     // imshow("generalized_gray Blue", generalized_grayscale[0]);
     // imshow("generalized_gray Green", generalized_grayscale[0]);
     // imshow("generalized_gray Red", generalized_grayscale[0]);
     // imshow("Blue", mat_closed[0]);
     // imshow("Green", mat_closed[0]);
     // imshow("Red", mat_closed[0]);
-    // imshow("Juntos BGR", mat_out);
     // imshow("Cabelo B", mat_hair[0]);
     // imshow("Cabelo G", mat_hair[1]);
     // imshow("Cabelo R", mat_hair[2]);
-    imshow("Matriz Cabelos", mat_hair_final);
+    
     imshow("Imagem Original", mat_colored);
+    imshow("Sem cabelo", mat_out);
+    imshow("Matriz Cabelos", mat_hair_final);
     waitKey(0);
     destroyAllWindows();
-
+    // imwrite("sempelo1.jpg", mat_out);
     return 0;
 }
