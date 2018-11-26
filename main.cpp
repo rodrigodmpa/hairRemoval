@@ -6,7 +6,7 @@
 #include <list>
 #include <cmath>
 #include <vector>
-#define T 2
+#define T 24
  
 using namespace cv;
 using namespace std;

@@ -1,2 +1,4 @@
 .vscode/*
 *.pdf
+.DS_Store
+hair.dSYM/*
