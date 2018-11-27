@@ -60,7 +60,7 @@ bool medianFiltering(Mat *in, Mat *out,Mat *hair, int kernel){
             }
             sort(kernelValues.begin(), kernelValues.end());
 
-            if(hair->at<uchar>(Point(x,y)) == 0){ // Só faz a mediana se for região de cabelo
+            if(hair->at<uchar>(Point(x,y)) == 255){ // Só faz a mediana se for região de cabelo
                 out->at<uchar>(Point(x,y)) = kernelValues[(kernel*kernel -1)/2];
             }
             kernelValues.clear();
@@ -380,7 +380,7 @@ int main(int argc , char *argv[])
     mat_hair_final_grossa = 255 - mat_hair_final_grossa;
 
     
-    medianFiltering(&mat_hair_final,&mat_hair_final,&mat_mediana,5);
+    medianFiltering(&mat_hair_final,&mat_mediana,&mat_hair_final,5);
 
 
     
