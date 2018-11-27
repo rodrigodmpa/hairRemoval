@@ -7,7 +7,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#define T 22
+#define T 47
  
 using namespace cv;
 using namespace std;
@@ -28,6 +28,49 @@ void iniciaLinhas(struct lines *linhas){
     }
 }
 
+bool medianFiltering(Mat *in, Mat *out, int kernel){
+
+    //argumentos devem conter dados
+    if( !in->data || !out->data ) {
+        printf("Entrada do filtro de mediana invalida!\n");
+        return false;
+    }
+
+    if(kernel %2 == 0){
+        printf("Tamanho da janela deve ser impar.\n");
+        return false;
+    }
+
+    int borderSize = (kernel-1)/2;
+    vector<uchar> kernelValues;
+
+    Mat buffer;
+    in->copyTo(buffer);
+
+    copyMakeBorder(buffer,buffer,borderSize,borderSize,borderSize,borderSize,BORDER_DEFAULT); //espelha a borda
+    
+    //passa o kernel na imagem, e o centro passa a ser a mediana. (uso a função sort)
+    for(int x = borderSize ; x < in->cols ; x++){
+        for(int y = borderSize ; y < in->rows ; y++){
+            
+            for(int kernelX = x-borderSize ; kernelX <= x+borderSize ; kernelX++ ){
+                for(int kernelY = y - borderSize ; kernelY <= y+borderSize ; kernelY++){
+                    kernelValues.push_back(buffer.at<uchar>(Point(kernelX,kernelY)));
+                }
+            }
+            sort(kernelValues.begin(), kernelValues.end());
+
+            out->at<uchar>(Point(x,y)) = kernelValues[(kernel*kernel -1)/2];
+
+            kernelValues.clear();
+
+
+        }
+    }
+    
+    return true;
+}
+
 int main(int argc , char *argv[])
 {
 //    if(argc < 3){
@@ -37,13 +80,14 @@ int main(int argc , char *argv[])
     Mat mat_hair[3], mat_closed0[3],mat_closed45[3],mat_closed90[3],mat_closed[3]; // Matrizes auxiliares para o fechamento e para os cabelos
     Mat kernel0,kernel45,kernel90; //Declaração dos kernels para fazer closing
     Mat channels[3]; // Matriz dos canais BRG separados
-    Mat generalized_grayscale[3], mat_hair_final;// Matrizes necessarias para calculo da matriz de cabelo final binaria
+    Mat generalized_grayscale[3], mat_hair_final,mat_hair_final_grossa,mat_mediana;// Matrizes necessarias para calculo da matriz de cabelo final binaria
 
-    mat_colored = imread("./fig5.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
+    mat_colored = imread("./fig1.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
 
     split(mat_colored,channels); // Separa a matriz colorida em 3 canais BGR
 
     // Inicializa matrizes com 0
+    mat_mediana = Mat::zeros(mat_colored.rows,mat_colored.cols, CV_8UC1); // Matriz que contem a mediana
     for (int i =0;i<3;i++){
         mat_closed0[i] = Mat::zeros(mat_colored.rows,mat_colored.cols, CV_8UC1); // Vetor de 3 matrizes (BGR) para o grau 0
         mat_closed45[i] = Mat::zeros(mat_colored.rows,mat_colored.cols, CV_8UC1);// Vetor de 3 matrizes (BGR) para o grau 45
@@ -58,7 +102,7 @@ int main(int argc , char *argv[])
     kernel90 = Mat::zeros(13,1, CV_8UC1);
 
     //Kernel para dilatacao
-    Mat kernelD = Mat::ones(3,3, CV_8UC1);
+    Mat kernelD = Mat::ones(4,4, CV_8UC1);
     
     int testK[9] = {0,1,0,
                     1,1,1,
@@ -303,7 +347,7 @@ int main(int argc , char *argv[])
     
     }
     
-//    mat_hair_final = 255- mat_hair_final;
+   mat_hair_final_grossa = 255 - mat_hair_final;
 //    dilate(mat_hair_final,mat_hair_final, kernelD);
 //    test = 255 - test;
 //    morphologyEx(mat_hair_final, mat_hair_final,cv::MORPH_OPEN, kernelD);
@@ -317,15 +361,20 @@ int main(int argc , char *argv[])
 //    mat_hair_final = 255 - mat_hair_final;
 
 
+    // Dilata a matriz de pelos para que estes fiquem mais grossos, utilizo aqui um kernel de 4x4 com 1's
+    dilate(mat_hair_final_grossa,mat_hair_final_grossa, kernelD);
+    mat_hair_final_grossa = 255 - mat_hair_final_grossa;
 
-    //dilate(mat_hair_final,mat_hair_final, kernelD);
+    
+    medianFiltering(&mat_hair_final,&mat_mediana,5);
 
 
     
-    
-//    imshow("Imagem Original", mat_colored);
-    //imshow("Sem cabelo", mat_out);
-    imshow("Matriz Cabelos", mat_hair_final);
+    imshow("Imagem Original", mat_colored);
+    imshow("Mediana Pelos", mat_mediana);
+    // imshow("Sem cabelo", mat_out);
+    imshow("Cabelos", mat_hair_final);
+    imshow("Cabelos dilatados", mat_hair_final_grossa);
     waitKey(0);
     destroyAllWindows();
     imwrite("pelo1_corrigido.png", mat_hair_final);
