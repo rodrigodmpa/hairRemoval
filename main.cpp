@@ -83,7 +83,7 @@ int main(int argc , char *argv[])
     Mat channels[3]; // Matriz dos canais BRG separados
     Mat generalized_grayscale[3], mat_hair_final,mat_hair_final_grossa,mat_mediana;// Matrizes necessarias para calculo da matriz de cabelo final binaria
 
-    mat_colored = imread("./fig1.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
+    mat_colored = imread("./fig4.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
 
     split(mat_colored,channels); // Separa a matriz colorida em 3 canais BGR
 
@@ -391,6 +391,12 @@ int main(int argc , char *argv[])
     imshow("Cabelos dilatados", mat_hair_final_grossa);
     waitKey(0);
     destroyAllWindows();
+    imwrite("HairBluei.png", mat_hair[0]);
+    imwrite("HairGreeni.png", mat_hair[1]);
+    imwrite("HairRedi.png", mat_hair[2]);
+    imwrite("pelo_fino.png", mat_hair_final);
+    imwrite("pelo_grosso.png", mat_hair_final_grossa);
+    imwrite("pelo1_corrigido.png", mat_hair_final);
     imwrite("pelo1_corrigido.png", mat_hair_final);
     return 0;
 }
