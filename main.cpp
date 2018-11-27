@@ -60,7 +60,7 @@ bool medianFiltering(Mat *in, Mat *out,Mat *hair, int kernel){
             }
             sort(kernelValues.begin(), kernelValues.end());
 
-            if(hair->at<uchar>(Point(x,y)) == 255){ // Só faz a mediana se for região de cabelo
+            if(hair->at<uchar>(Point(x,y)) == 0){ // Só faz a mediana se for região de cabelo
                 out->at<uchar>(Point(x,y)) = kernelValues[(kernel*kernel -1)/2];
             }
             kernelValues.clear();
@@ -83,7 +83,7 @@ int main(int argc , char *argv[])
     Mat channels[3]; // Matriz dos canais BRG separados
     Mat generalized_grayscale[3], mat_hair_final,mat_hair_final_grossa,mat_mediana;// Matrizes necessarias para calculo da matriz de cabelo final binaria
 
-    mat_colored = imread("./fig5.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
+    mat_colored = imread("./fig1.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
 
     split(mat_colored,channels); // Separa a matriz colorida em 3 canais BGR
 
@@ -220,7 +220,7 @@ int main(int argc , char *argv[])
     /* Removendo ruídos de mat_hair_final*/
 
 
-    imwrite("pelo1.png", mat_hair_final);
+    imwrite("output/pelo1.png", mat_hair_final);
     struct lines linhas;
 
     int posX = 0;
@@ -351,7 +351,184 @@ int main(int argc , char *argv[])
     for(int y = 0 ; y < mat_hair_final.rows ; y++){
         for(int x = 0 ; x < mat_hair_final.cols ; x++){
 
+
             if(mat_hair_final.at<uchar>(Point(x,y)) == 0){
+
+               Point2d candxP = Point(x,y), candxM = Point(x,y), candyP = Point(x,y), candyM = Point(x,y);
+               Point2d candxP45 = Point(x,y), candxM45 = Point(x,y), candyP135 = Point(x,y) , candyM135 = Point(x,y);
+               
+               iniciaLinhas(&linhas);
+
+               //Em 0º
+               posX = x;
+               posY = y;
+               while(posX < mat_hair_final.cols){
+                   posX++;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       linhas.lin[0]++;
+                       candxP = Point(posX,posY);
+                   } else{
+                       break;
+                   } 
+               }
+
+               //Em 45º
+               posX = x;
+               posY = y;
+               while((posX < mat_hair_final.cols) && (posY > 0)){
+                   posX++;
+                   posY--;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       candxP45 = Point(posX,posY);
+                       linhas.lin[1]++;
+                   } else{
+                       break;
+                   } 
+               }
+
+               //Em 90º
+               posX = x;
+               posY = y;
+               while(posY > 0 ){
+                   posY--;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       linhas.lin[2]++;
+                       candyP = Point(posX,posY);
+                   } else{
+                       break;
+                   } 
+               }
+
+               //Em 135º
+
+               posX = x;
+               posY = y;
+               while((posX >= 0) && (posY >0)){
+                   posX--;
+                   posY--;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       linhas.lin[3]++;
+                       //candxP135 = Point(posX,posY);
+                   } else{
+                       break;
+                   } 
+               }
+
+               //Em 180º
+               posX = x;
+               posY = y;
+               while(posX >= 0){
+                   posX--;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       linhas.lin[0]++;
+                       candxM = Point(posX,posY);
+                   } else{
+                       break;
+                   } 
+               }
+
+               //Em 225º
+               posX = x;
+               posY = y;
+               while((posX >= 0) && (posY < mat_hair_final.rows)){
+                   posX--;
+                   posY++;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       linhas.lin[1]++;
+                       candxM45 = Point(posX,posY);
+                   } else{
+                       break;
+                   } 
+               }
+
+               //Em 270º
+               posX = x;
+               posY = y;
+               while(posY < mat_hair_final.rows){
+                   posY++;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       linhas.lin[2]++;
+                       candyM = Point(posX,posY);
+                   } else{
+                       break;
+                   } 
+               }
+
+               //Em 315º
+               posX = x;
+               posY = y;
+               while((posX < mat_hair_final.cols) && (posY < mat_hair_final.rows)){
+                   posX++;
+                   posY++;
+                   if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
+                       linhas.lin[3]++;
+                       //candxM135 = Point(posX,posY);
+                   } else{
+                       break;
+                   } 
+               }
+                
+               
+               int skip = 1;
+               if(candxP.x > (mat_hair_final.cols - (skip+1))){
+                    candxP.x = mat_hair_final.cols   -1;
+               } else{
+                    candxP.x += skip;
+               }
+
+               if(candxM.x < skip){
+                    candxM.x = 0;
+               } else{
+                    candxM.x -= skip;
+               }
+
+               if(candyM.y > (mat_hair_final.rows - (skip+1))){
+                    candyM.y = mat_hair_final.rows - 1;
+               } else{
+                    candyM.y += skip;
+               }
+
+               if(candyP.y < skip){
+                    candyP.y = 0;
+               } else{
+                    candyP.y -= skip;
+               }
+
+               
+               
+//               cout << candxP << "," << candyP << " " << candxM << "," << candyM << endl;
+               Point2d candFinal1, candFinal2;
+               int bgrBilinear[3] = {0,0,0};
+
+               if(linhas.lin[0] > linhas.lin[2]){
+                   candFinal1 = candyP;
+                   candFinal2 = candyM;
+               } else{
+                   candFinal1 = candxP;
+                   candFinal2 = candxM; 
+               }
+
+              bgrBilinear[0] =
+                    
+                    channels[0].at<uchar>(candFinal2)*sqrt((pow(candFinal1.x-x,2)+pow(candFinal1.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2))) +
+                    channels[0].at<uchar>(candFinal1)*sqrt((pow(candFinal2.x-x,2)+pow(candFinal2.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2)));
+
+               bgrBilinear[1] =
+                    (int)channels[1].at<uchar>(candFinal2)*sqrt((pow(candFinal1.x-x,2)+pow(candFinal1.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2))) +
+                    (int)channels[1].at<uchar>(candFinal1)*sqrt((pow(candFinal2.x-x,2)+pow(candFinal2.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2)));
+
+               bgrBilinear[2] =
+                    (int)channels[2].at<uchar>(candFinal2)*sqrt((pow(candFinal1.x-x,2)+pow(candFinal1.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2))) +
+                    (int)channels[2].at<uchar>(candFinal1)*sqrt((pow(candFinal2.x-x,2)+pow(candFinal2.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2)));
+//                     cout << "BGR: " << (int) channels[0].at<uchar>(Point(x,y)) << " " << bgrBilinear[0] << " , " << bgrBilinear[1] << " , " << bgrBilinear[2] << endl;
+
+
+
+             //mat_hair_final.at<uchar>(candFinal1) = 150;
+             channels[0].at<uchar>(Point(x,y)) = bgrBilinear[0];
+             channels[1].at<uchar>(Point(x,y)) = bgrBilinear[1];
+             channels[2].at<uchar>(Point(x,y)) = bgrBilinear[2];
+               
 
             }
 
@@ -380,7 +557,14 @@ int main(int argc , char *argv[])
     mat_hair_final_grossa = 255 - mat_hair_final_grossa;
 
     
-    medianFiltering(&mat_hair_final,&mat_mediana,&mat_hair_final,5);
+     medianFiltering(&channels[0],&channels[0],&mat_hair_final_grossa,5);
+    medianFiltering(&channels[1],&channels[1],&mat_hair_final_grossa,5);
+    medianFiltering(&channels[2],&channels[2],&mat_hair_final_grossa,5);
+
+    Mat matFinal;
+    merge(channels,3,matFinal);
+    imwrite("imgFinal.png",matFinal);
+
 
 
     
@@ -391,12 +575,12 @@ int main(int argc , char *argv[])
     imshow("Cabelos dilatados", mat_hair_final_grossa);
     waitKey(0);
     destroyAllWindows();
-    imwrite("HairBluei.png", mat_hair[0]);
-    imwrite("HairGreeni.png", mat_hair[1]);
-    imwrite("HairRedi.png", mat_hair[2]);
-    imwrite("pelo_fino.png", mat_hair_final);
-    imwrite("pelo_grosso.png", mat_hair_final_grossa);
-    imwrite("pelo1_corrigido.png", mat_hair_final);
-    imwrite("pelo1_corrigido.png", mat_hair_final);
+    imwrite("output/HairBluei.png", mat_hair[0]);
+    imwrite("output/HairGreeni.png", mat_hair[1]);
+    imwrite("output/HairRedi.png", mat_hair[2]);
+    imwrite("output/pelo_fino.png", mat_hair_final);
+    imwrite("output/pelo_grosso.png", mat_hair_final_grossa);
+    imwrite("output/pelo1_corrigido.png", mat_hair_final);
+    imwrite("output/pelo1_corrigido.png", mat_hair_final);
     return 0;
 }
