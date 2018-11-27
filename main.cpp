@@ -28,7 +28,7 @@ void iniciaLinhas(struct lines *linhas){
     }
 }
 
-bool medianFiltering(Mat *in, Mat *out, int kernel){
+bool medianFiltering(Mat *in, Mat *out,Mat *hair, int kernel){
 
     //argumentos devem conter dados
     if( !in->data || !out->data ) {
@@ -60,8 +60,9 @@ bool medianFiltering(Mat *in, Mat *out, int kernel){
             }
             sort(kernelValues.begin(), kernelValues.end());
 
-            out->at<uchar>(Point(x,y)) = kernelValues[(kernel*kernel -1)/2];
-
+            if(hair->at<uchar>(Point(x,y)) == 0){ // Só faz a mediana se for região de cabelo
+                out->at<uchar>(Point(x,y)) = kernelValues[(kernel*kernel -1)/2];
+            }
             kernelValues.clear();
 
 
@@ -347,7 +348,20 @@ int main(int argc , char *argv[])
     
     }
     
-   mat_hair_final_grossa = 255 - mat_hair_final;
+    for(int y = 0 ; y < mat_hair_final.rows ; y++){
+        for(int x = 0 ; x < mat_hair_final.cols ; x++){
+
+            if(mat_hair_final.at<uchar>(Point(x,y)) == 0){
+
+            }
+
+        }
+    }
+
+
+    // A matriz de cabelos que será dilatada é invertida para que a dilatação seja feita corretamente. 
+    mat_hair_final_grossa = 255 - mat_hair_final;
+
 //    dilate(mat_hair_final,mat_hair_final, kernelD);
 //    test = 255 - test;
 //    morphologyEx(mat_hair_final, mat_hair_final,cv::MORPH_OPEN, kernelD);
@@ -366,7 +380,7 @@ int main(int argc , char *argv[])
     mat_hair_final_grossa = 255 - mat_hair_final_grossa;
 
     
-    medianFiltering(&mat_hair_final,&mat_mediana,5);
+    medianFiltering(&mat_hair_final,&mat_hair_final,&mat_mediana,5);
 
 
     
