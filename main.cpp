@@ -3,7 +3,6 @@
 #include <opencv2/opencv.hpp>
 #include "HairRemoval.hpp"
 #include <iostream>
-#include <math.h>
 #include <list>
 #include <cmath>
 #include <vector>
@@ -84,7 +83,7 @@ int main(int argc , char *argv[])
     Mat channels[3]; // Matriz dos canais BRG separados
     Mat generalized_grayscale[3], mat_hair_final,mat_hair_final_grossa,mat_mediana;// Matrizes necessarias para calculo da matriz de cabelo final binaria
 
-    mat_colored = imread("./fig1.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
+    mat_colored = imread("./fig5.png",CV_LOAD_IMAGE_COLOR); //carrega arquivo
 
     split(mat_colored,channels); // Separa a matriz colorida em 3 canais BGR
 
@@ -232,8 +231,6 @@ int main(int argc , char *argv[])
 
     Mat test = mat_hair_final.clone();
 
-    Point2d candxP = Point(0,0), candxM = Point(0,0), candyP = Point(0,0), candyM = Point(0,0);
-
     for(int y = 0 ; y < mat_hair_final.rows ; y++){
         for(int x = 0 ; x < mat_hair_final.cols ; x++){
 
@@ -244,12 +241,10 @@ int main(int argc , char *argv[])
                //Em 0º
                posX = x;
                posY = y;
-               candxP = Point(posX,posY);
                while(posX < mat_hair_final.cols){
                    posX++;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[0]++;
-                       candxP = Point(posX,posY);
                    } else{
                        break;
                    } 
@@ -258,9 +253,9 @@ int main(int argc , char *argv[])
                //Em 45º
                posX = x;
                posY = y;
-               while((posX < mat_hair_final.cols) && (posY < mat_hair_final.rows)){
+               while((posX < mat_hair_final.cols) && (posY > 0)){
                    posX++;
-                   posY++;
+                   posY--;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[1]++;
                    } else{
@@ -271,12 +266,10 @@ int main(int argc , char *argv[])
                //Em 90º
                posX = x;
                posY = y;
-               candyP = Point(posX,posY);
-               while(posY < mat_hair_final.rows){
-                   posY++;
+               while(posY > 0 ){
+                   posY--;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[2]++;
-                        candyP = Point(posX,posY);
                    } else{
                        break;
                    } 
@@ -285,9 +278,9 @@ int main(int argc , char *argv[])
 
                posX = x;
                posY = y;
-               while((posX >= 0) && (posY < mat_hair_final.rows)){
+               while((posX >= 0) && (posY >0)){
                    posX--;
-                   posY++;
+                   posY--;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[3]++;
                    } else{
@@ -297,12 +290,10 @@ int main(int argc , char *argv[])
                //Em 180º
                posX = x;
                posY = y;
-               candxM = Point(posX,posY);
                while(posX >= 0){
                    posX--;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[0]++;
-                       candxM = Point(posX,posY);
                    } else{
                        break;
                    } 
@@ -310,9 +301,9 @@ int main(int argc , char *argv[])
                //Em 225º
                posX = x;
                posY = y;
-               while((posX >= 0) && (posY >= 0)){
+               while((posX >= 0) && (posY < mat_hair_final.rows)){
                    posX--;
-                   posY--;
+                   posY++;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[1]++;
                    } else{
@@ -322,12 +313,10 @@ int main(int argc , char *argv[])
                //Em 270º
                posX = x;
                posY = y;
-               candyM = Point(posX,posY);
-               while(posY >= 0){
-                   posY--;
+               while(posY < mat_hair_final.rows){
+                   posY++;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[2]++;
-                       candyM = Point(posX,posY);
                    } else{
                        break;
                    } 
@@ -335,9 +324,9 @@ int main(int argc , char *argv[])
                //Em 315º
                posX = x;
                posY = y;
-               while((posX < mat_hair_final.cols) && (posY >= 0)){
+               while((posX < mat_hair_final.cols) && (posY < mat_hair_final.rows)){
                    posX++;
-                   posY--;
+                   posY++;
                    if(mat_hair_final.at<uchar>(Point(posX,posY)) == 0){
                        linhas.lin[3]++;
                    } else{
@@ -351,85 +340,25 @@ int main(int argc , char *argv[])
                
 //               cout << x << "," << y << " / " << sortLinhas[0] << " - " << sortLinhas[1] << endl;
                if(!(sortLinhas[0] > comprimento && sortLinhas[1] < largura)){
-                    mat_hair_final.at<uchar>(Point(x,y)) = 255;
+                mat_hair_final.at<uchar>(Point(x,y)) = 255;
                }
                 
-               // INTERPOLAÇÃO
-               //dá o valor para os candidatos
-               int param = 5;
-               if(candxP.x > (mat_hair_final.cols - (param+1))){
-                    candxP.x = mat_hair_final.cols   -1;
-               } else{
-                    candxP.x += param;
-               }
-
-               if(candxM.x < param){
-                    candxM.x = 0;
-               } else{
-                    candxP.x -= param;
-               }
-
-               if(candyP.y > (mat_hair_final.rows - (param+1))){
-                    candyP.y = mat_hair_final.rows - 1;
-               } else{
-                    candyP.y += param;
-               }
-
-               if(candyM.y < param){
-                    candyM.y = 0;
-               } else{
-                    candyP.y -= param;
-               }
-
-               Point2d candFinal1, candFinal2;
-               int bgrBilinear[3] = {0,0,0};
-               //escolhe os candidatos para a interpolação
-               
-               //Se linha horizontal é maior que a linha vertical
-               //Escolhe candidatos verticais e vice versa
-               if(linhas.lin[0] > linhas.lin[2]){
-                   candFinal1 = candyP;
-                   candFinal2 = candyM;
-               } else{
-                   candFinal1 = candxP;
-                   candFinal2 = candyM;
-               }
-
-               bgrBilinear[0] = 
-                    channels[0].at<uchar>(candFinal2)*sqrt((pow(candFinal1.x-x,2)+pow(candFinal1.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2))) + 
-                    channels[0].at<uchar>(candFinal1)*sqrt((pow(candFinal2.x-x,2)+pow(candFinal2.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2)));
-
-               bgrBilinear[1] = 
-                    (int)channels[1].at<uchar>(candFinal2)*sqrt((pow(candFinal1.x-x,2)+pow(candFinal1.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2))) + 
-                    (int)channels[1].at<uchar>(candFinal1)*sqrt((pow(candFinal2.x-x,2)+pow(candFinal2.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2)));
-
-               bgrBilinear[2] = 
-                    (int)channels[2].at<uchar>(candFinal2)*sqrt((pow(candFinal1.x-x,2)+pow(candFinal1.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2))) + 
-                    (int)channels[2].at<uchar>(candFinal1)*sqrt((pow(candFinal2.x-x,2)+pow(candFinal2.y-y,2))/(pow(candFinal2.x - candFinal1.x,2)+pow(candFinal2.y - candFinal1.y,2)));
-                    
-                    //corrige valores negativos
-                    if(bgrBilinear[0] < 0){
-                        bgrBilinear[0] = (int)(channels[0].at<uchar>(candFinal1)+ channels[0].at<uchar>(candFinal2))/2;
-                        bgrBilinear[1] = (int)(channels[1].at<uchar>(candFinal1)+ channels[1].at<uchar>(candFinal2))/2;
-                        bgrBilinear[2] = (int)(channels[2].at<uchar>(candFinal1)+ channels[2].at<uchar>(candFinal2))/2;
-                    }
-                    
-                   //substitui pixels (está errado por enquanto)
-                   channels[0].at<uchar>(Point(x,y)) = bgrBilinear[0];
-                   channels[1].at<uchar>(Point(x,y)) = bgrBilinear[1];
-                   channels[2].at<uchar>(Point(x,y)) = bgrBilinear[2];
-                   //deixa o cabelo branco
-                   // channels[0].at<uchar>(Point(x,y)) = 255;
-                   // channels[1].at<uchar>(Point(x,y)) = 255;
-                   // channels[2].at<uchar>(Point(x,y)) = 255;
-
-                  //  cout << "BGR: " << (int) channels[0].at<uchar>(Point(x,y)) << " " << bgrBilinear[0] << " , " << bgrBilinear[1] << " , " << bgrBilinear[2] << endl;
-                                
             }
         }
     
     }
-     
+    
+    for(int y = 0 ; y < mat_hair_final.rows ; y++){
+        for(int x = 0 ; x < mat_hair_final.cols ; x++){
+
+            if(mat_hair_final.at<uchar>(Point(x,y)) == 0){
+
+            }
+
+        }
+    }
+
+
     // A matriz de cabelos que será dilatada é invertida para que a dilatação seja feita corretamente. 
     mat_hair_final_grossa = 255 - mat_hair_final;
 
@@ -451,23 +380,23 @@ int main(int argc , char *argv[])
     mat_hair_final_grossa = 255 - mat_hair_final_grossa;
 
     
-    medianFiltering(&channels[0],&channels[0],&mat_hair_final_grossa,5);
-    medianFiltering(&channels[1],&channels[1],&mat_hair_final_grossa,5);
-    medianFiltering(&channels[2],&channels[2],&mat_hair_final_grossa,5);
-    
-    Mat matFinal;
-    merge(channels,3,matFinal);
-    imwrite("imgFinal.png",matFinal);
+    medianFiltering(&mat_hair_final,&mat_mediana,&mat_hair_final,5);
 
 
     
-//    imshow("Imagem Original", mat_colored);
-//    imshow("Mediana Pelos", mat_mediana);
+    imshow("Imagem Original", mat_colored);
+    imshow("Mediana Pelos", mat_mediana);
     // imshow("Sem cabelo", mat_out);
     imshow("Cabelos", mat_hair_final);
-//    imshow("Cabelos dilatados", mat_hair_final_grossa);
+    imshow("Cabelos dilatados", mat_hair_final_grossa);
     waitKey(0);
     destroyAllWindows();
+    imwrite("HairBluei.png", mat_hair[0]);
+    imwrite("HairGreeni.png", mat_hair[1]);
+    imwrite("HairRedi.png", mat_hair[2]);
+    imwrite("pelo_fino.png", mat_hair_final);
+    imwrite("pelo_grosso.png", mat_hair_final_grossa);
+    imwrite("pelo1_corrigido.png", mat_hair_final);
     imwrite("pelo1_corrigido.png", mat_hair_final);
     return 0;
 }
