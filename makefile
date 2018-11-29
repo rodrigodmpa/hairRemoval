@@ -1,6 +1,6 @@
 CC = g++ -std=c++11
 CFLAGS = -g -Wall
-SRCS = main.cpp HairRemoval.cpp
+SRCS = main.cpp
 PROG = hair
 
 OPENCV = `pkg-config opencv --cflags --libs`
